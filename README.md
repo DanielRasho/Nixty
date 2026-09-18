@@ -1,7 +1,11 @@
-<h1 align="center">Nixty</h1>
-<p align="center">Generate Nix Flakes using Typescript</p>
+<p align="center">
+    <img src="logo.png" width="30%"></img>
+</p>
+<p align="center"><b>Generate Nix Flakes using Typescript</b></p>
 
-Nix language is known for its steep learning curve, if only you could interact with Nix with a language you are more familiar with... o wait, thats what this library does.
+-----
+
+Nix is known for its icy difficulty barrier, if only you could interact with Nix with a language you are more familiar with... o wait, thats what this library does.
 
 Describe an generate nix flakes using typescript code:
 
