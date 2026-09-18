@@ -28,6 +28,8 @@ jobs:
 
       - run: pnpm build
 
-      - run: pnpm publish --access public --no-git-checks
+      # Staging needs no 2FA, so it works with a stage-only token. The version stays
+      # invisible to `pnpm install` until promoted with `pnpm stage approve <id> --otp <code>`.
+      - run: pnpm stage publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
