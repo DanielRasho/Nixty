@@ -1,19 +1,51 @@
 {
-  "name": "Nixty",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "bin": {
-    "nixty": "./"
+  "name": "nixty-lib",
+  "version": "0.1.0",
+  "description": "A typed DSL for Nix: write your flake as TypeScript, emit a flake.nix.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
+  "bin": {
+    "nixty": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prepublishOnly": "pnpm build"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "nix",
+    "nixos",
+    "flake",
+    "flake.nix",
+    "dsl",
+    "typescript",
+    "cli"
+  ],
+  "author": "Daniel Rasho",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DanielRasho/Nixty.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DanielRasho/Nixty/issues"
+  },
+  "homepage": "https://github.com/DanielRasho/Nixty#readme",
+  "engines": {
+    "node": ">=18"
+  },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
@@ -21,8 +53,8 @@
       "onFail": "download"
     }
   },
-  "type": "module",
   "devDependencies": {
+    "@types/node": "^26.6.1",
     "vitest": "^5.0.1"
   },
   "dependencies": {

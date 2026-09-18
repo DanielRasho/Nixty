@@ -1,6 +1,2 @@
-
-export interface uwu{
-    name: string;
-}
-
-console.log("uwu")
+// Public DSL surface. Builders (flake(), pkgs(), ...) land here as they're implemented.
+export {};
