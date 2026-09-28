@@ -44,14 +44,7 @@
   },
   "homepage": "https://github.com/DanielRasho/Nixty#readme",
   "engines": {
-    "node": ">=18"
-  },
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.3.0",
-      "onFail": "download"
-    }
+    "node": ">=22"
   },
   "devDependencies": {
     "@types/node": "^26.6.1",
