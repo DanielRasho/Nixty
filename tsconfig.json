@@ -14,7 +14,9 @@
     "outDir": "./dist",
 
     // Stricter Typechecking Options
-    "noUncheckedIndexedAccess": true,
+    // Off so proxy dot access (`expr.a.b[0]`) types as `Expresion`, not `Expresion | undefined`.
+    // `nixty generate` must force it off for the user's flake.ts too (see CLAUDE.md, PLAN.md).
+    "noUncheckedIndexedAccess": false,
     "exactOptionalPropertyTypes": true,
 
     // Recommended Options
@@ -23,7 +25,10 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strictPropertyInitialization": false
   },
   "include": ["src/**/*", "test/**/*"]
 }
