@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./compiler": {
+      "types": "./dist/compiler.d.ts",
+      "import": "./dist/compiler.js"
     }
   },
   "bin": {
@@ -51,6 +55,7 @@
     "vitest": "^5.0.1"
   },
   "dependencies": {
+    "commander": "^15.0.0",
     "typescript": "^7.0.2"
   }
 }
