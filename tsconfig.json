@@ -28,7 +28,14 @@
     "skipLibCheck": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+
+    // Tests import nixty-lib by its public names, like a user's file. Keep in sync with the aliases in
+    // vitest.config.js and the "exports" in package.json.
+    "paths": {
+      "nixty-lib": ["./src/index.ts"],
+      "nixty-lib/compiler": ["./src/compiler.ts"]
+    }
   },
   "include": ["src/**/*", "test/**/*"]
 }
