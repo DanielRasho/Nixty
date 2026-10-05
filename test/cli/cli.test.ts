@@ -4,13 +4,13 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { compile } from "nixty-lib/compiler"
-import { main } from "../src/cli.js"
-import { currentSystem, nixArgs } from "../src/commands/nix.js"
-import { System } from "../src/compiler/constants.js"
-import compile01 from "./cases/compile01.js"
+import { main } from "../../src/cli.js"
+import { currentSystem, nixArgs } from "../../src/commands/nix.js"
+import { System } from "../../src/compiler/constants.js"
+import compile01 from "../cases/compile01.js"
 
-const COMPILE01 = join(import.meta.dirname, "cases", "compile01.ts")
-const REPO = join(import.meta.dirname, "..")
+const COMPILE01 = join(import.meta.dirname, "..", "cases", "compile01.ts")
+const REPO = join(import.meta.dirname, "..", "..")
 const FEATURES = ["--extra-experimental-features", "nix-command flakes"]
 
 function tempDir(): string {

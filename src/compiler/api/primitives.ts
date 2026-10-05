@@ -187,7 +187,7 @@ export interface MercurialOptions {
 export interface TarballOptions {
     /** Download link. Ex: https://example.com/app-1.0.tar.gz */
     url : string
-    /** Expected hash of the file; Nix refuses the download if it doesn't match.*/
+    /** Expected hash of the file contents ; Nix halts evaluation if it doesn't match. */
     hash?: string
 }
 

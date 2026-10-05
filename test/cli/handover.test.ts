@@ -2,11 +2,11 @@ import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { main } from "../src/cli.js"
-import { runInForeground } from "../src/commands/foreground.js"
-import { handOver, localCli } from "../src/commands/handover.js"
+import { main } from "../../src/cli.js"
+import { runInForeground } from "../../src/commands/foreground.js"
+import { handOver, localCli } from "../../src/commands/handover.js"
 
-const REPO = join(import.meta.dirname, "..")
+const REPO = join(import.meta.dirname, "..", "..")
 
 /**
  * A project whose node_modules has a copy of nixty-lib with its CLI at `bin`. That CLI writes the
