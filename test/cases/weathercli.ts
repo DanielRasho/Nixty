@@ -1,52 +1,50 @@
-// weathercli, written for what the package IS rather than how Nix builds it.
-import { nixpkgs, program, devShell, flake, file, src, systems, licenses } from "nixty-lib";
+// weathercli: a shell script packaged with its default config, compiled to weathercli.nix by
+// test/compiler/compile.test.ts. Unlike compile01, it skips phases and adds its own postFixup.
+import { Definition, DevShell, Licenses, Nixpkgs, Package, Path, Source, System, nix } from "nixty-lib"
 
-// Registers the `nixpkgs` input and gives back its package set in one step.
-const pkgs = nixpkgs("nixos-unstable");
+const SYSTEMS = [System.x86_64Linux, System.aarch64Linux, System.x86_64Darwin, System.aarch64Darwin]
 
-// A file shipped inside the package. The handle is reused below to point the
-// program at it, so the path is written once.
-const defaultConfig = file.json("share/weathercli/config.json", {
-  city: "Mexico City",
-  units: "metric",
-  format: "compact",
-});
+const NIX_PKGS = new Nixpkgs({ tag: "nixos-unstable" })
 
-const weathercli = program({
-  name: "weathercli",
-  version: "1.0.0",
-  description: "Reporte del clima en la terminal, configurable vía un archivo JSON",
-  license: licenses.mit,
+// Where the config is installed inside the package, written once for the install and the wrapper.
+const CONFIG = "share/weathercli/config.json"
 
-  // Everything the package contains, by path inside it.
-  files: [
-    file.executable("bin/weathercli", src.file("./weathercli.sh")),
-    defaultConfig,
-  ],
+const defaultConfig = (system: System) =>
+    NIX_PKGS.getExpresion("writeText", system)(
+        "weathercli-config.json",
+        JSON.stringify({ city: "Mexico City", units: "metric", format: "compact" }),
+    )
 
-  // Programs weathercli calls. They're put on its PATH so users don't need
-  // to install them separately.
-  runtimeDeps: [pkgs.curl, pkgs.jq],
+const weathercli = new Package("weathercli", SYSTEMS, (system) => ({
+    version: "1.0.0",
+    src: new Source(Path.fetchInternalPath(".")),
+    deps: {
+        // Programs weathercli calls. They're put on its PATH so users don't need to install them.
+        atRuntime: NIX_PKGS.getPackages(["curl", "jq"], system),
+    },
+    // No configure or build phase: there is nothing to compile.
+    phases: (out) => ({
+        install: nix`install -Dm755 weathercli.sh ${out}/bin/weathercli\ninstall -Dm644 ${defaultConfig(system)} ${out}/${CONFIG}`,
+        // The config the program starts with. Users can still override it.
+        postFixup: nix`wrapProgram ${out}/bin/weathercli --set-default WEATHERCLI_CONFIG ${out}/${CONFIG}`,
+    }),
+    metadata: {
+        description: "Reporte del clima en la terminal, configurable vía un archivo JSON",
+        license: Licenses.MIT,
+        mainProgram: "weathercli",
+    },
+}))
 
-  // Environment the program starts with. Users can still override these.
-  env: {
-    WEATHERCLI_CONFIG: defaultConfig, // resolves to its installed path
-  },
-});
+const dev = new DevShell({
+    name: "dev",
+    systems: SYSTEMS,
+    packages: (system) => [weathercli.getDerivation(system)],
+    onEnter: `echo "weathercli dev shell — corre 'weathercli' para probar"`,
+})
 
-const dev = devShell({
-  packages: [weathercli],
-  onEnter: `echo "weathercli dev shell — corre 'weathercli' para probar"`,
-});
-
-export default flake({
-  description: "weathercli — reporte del clima en la terminal",
-  systems: [
-    systems.x86_64Linux,
-    systems.aarch64Linux,
-    systems.x86_64Darwin,
-    systems.aarch64Darwin,
-  ],
-  packages: { default: weathercli },
-  devShells: { default: dev },
-});
+export default new Definition({
+    description: "weathercli — reporte del clima en la terminal",
+    nixpkgs: NIX_PKGS,
+    packages: [weathercli],
+    devShells: [dev],
+})
