@@ -68,8 +68,8 @@ Nix does the actual work: downloading, building and installing.
 
 ![](./docs/how-it-works.png)
 
-1. You write a `nixty.ts` file that exports a [`Definition`](#definition). Your editor checks it as you type.
-2. `nixty generate` checks it again and writes a `flake.nix` next to it.
+1. You write a `nixty.ts` file that exports a [`Definition`](#definition).
+2. `nixty generate` translates your definition on a `flake.nix`.
 3. Nix reads that `flake.nix` and builds your packages or opens your shells.
 
 The result is a plain `flake.nix`. You can read it, commit it, and anyone with Nix can use it, even
@@ -87,7 +87,8 @@ If you already know Nix, expect to relearn a few names.
 
 2. Install Nixty
 ```bash
-pnpm add -D nixty-lib # In your project
+pnpm add -D nixty-lib   # Install nixty
+pnpm exec nixty init    # Create boilerplate config
 ```
 3. (Optional) Install the CLI Globally
 ```bash
@@ -115,8 +116,8 @@ The commands below use `nixty`. If you didn't install it globally, write `pnpm e
 ### 1. Init the project
 
 ```bash
-pnpm add -D nixty-lib
-pnpm exec nixty init
+pnpm add -D nixty-lib   # Install nixty
+pnpm exec nixty init    # Create boilerplate config
 ```
 
 > [!IMPORTANT]
@@ -147,7 +148,7 @@ a **package**: a program to install. Create `hello.sh`:
 
 ```bash
 #!/usr/bin/env bash
-figlet "Hello, ${1:-world}!"
+cowsay "Hello, ${1:-world}!"
 ```
 
 Add the package to `nixty.ts`, and export the project's `Definition`:
@@ -161,7 +162,7 @@ const hello = new Package("hello", SYSTEMS, (system) => ({
     version: "1.0.0",
     src: SRC,
     deps: {
-        atRuntime: NIX_PKGS.getPackages(["figlet"], system),
+        atRuntime: NIX_PKGS.getPackages(["cowsay"], system),
     },
     // Nothing to compile: just copy the script. `out` is the folder the package is installed into.
     phases: (out) => ({
@@ -188,7 +189,7 @@ nixty run hello Ana
 `./result/bin/hello` instead. Nix also wrote a `flake.lock`: it pins the exact version of nixpkgs, so
 everyone gets the same tools.
 
-`figlet` is a derivation too: `getPackages` gives you nixpkgs' recipes. The `nix` before the install
+`cowsay` is a derivation too: `getPackages` gives you nixpkgs' recipes. The `nix` before the install
 command lets you put `out` inside a string (see [`nix` strings](#nix-strings)).
 
 ### 4. Add a dev shell
@@ -276,7 +277,7 @@ const hello = new Package("hello", SYSTEMS, (system) => ({
     version: "1.0.0",
     src: SRC,
     deps: {
-        atRuntime: NIX_PKGS.getPackages(["figlet"], system),
+        atRuntime: NIX_PKGS.getPackages(["cowsay"], system),
     },
     phases: (out) => ({
         install: nix`install -Dm755 hello.sh ${out}/bin/hello`,
@@ -314,12 +315,13 @@ Run `nixty` in your project folder, or in any folder inside it: it uses the near
 
 | Command | What it does |
 |---|---|
+| `nixty init` | Write a `nixty.ts` to start from in this folder |
 | `nixty generate [file]` | Write `flake.nix` from `nixty.ts` (or from `file`) |
 | `nixty develop <shell>` | Enter a dev shell |
 | `nixty command <command> [args...]` | Run a command |
 | `nixty run <package> [args...]` | Build a package and run its program |
 | `nixty build <package>` | Build a package into `./result` |
-| `nixty update [inputs...]` | Move inputs (like nixpkgs) to their newest version in `flake.lock` |
+| `nixty update [inputs...]` | Updates the version of your dependencies to the newer possible `flake.lock` |
 
 `nixty --help` lists them, and `nixty <command> --help` explains one.
 
