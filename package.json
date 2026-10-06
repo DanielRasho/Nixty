@@ -1,6 +1,6 @@
 {
   "name": "nixty-lib",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A typed DSL for Nix: write your flake as TypeScript, emit a flake.nix.",
   "type": "module",
   "main": "./dist/index.js",
