@@ -33,11 +33,6 @@
                 for f in "$out"/bin/*; do
                   wrapProgram "$f" --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.figlet pkgs.cowsay ]}
                 done'';
-              meta = {
-                description = "Says hello in big letters";
-                license = pkgs.lib.licenses.mit;
-                mainProgram = "hello";
-              };
             };
           in
           {
@@ -48,18 +43,7 @@
               dev = pkgs.mkShell {
                 name = "dev";
                 packages = [ hello pkgs.shellcheck ];
-                env = {
-                  GREETING = "Hi";
-                };
-                shellHook = "echo \"Welcome! Try: hello, or shellcheck hello.sh\"";
-              };
-              dev-es = pkgs.mkShell {
-                name = "dev-es";
-                packages = [ hello pkgs.shellcheck ];
-                env = {
-                  GREETING = "Hola";
-                };
-                shellHook = "echo \"Welcome! Try: hello, or shellcheck hello.sh\"";
+                shellHook = "echo \"Try: hello Ana\"";
               };
             };
             apps = {
@@ -95,11 +79,6 @@
                 for f in "$out"/bin/*; do
                   wrapProgram "$f" --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.figlet pkgs.cowsay ]}
                 done'';
-              meta = {
-                description = "Says hello in big letters";
-                license = pkgs.lib.licenses.mit;
-                mainProgram = "hello";
-              };
             };
           in
           {
@@ -110,18 +89,7 @@
               dev = pkgs.mkShell {
                 name = "dev";
                 packages = [ hello pkgs.shellcheck ];
-                env = {
-                  GREETING = "Hi";
-                };
-                shellHook = "echo \"Welcome! Try: hello, or shellcheck hello.sh\"";
-              };
-              dev-es = pkgs.mkShell {
-                name = "dev-es";
-                packages = [ hello pkgs.shellcheck ];
-                env = {
-                  GREETING = "Hola";
-                };
-                shellHook = "echo \"Welcome! Try: hello, or shellcheck hello.sh\"";
+                shellHook = "echo \"Try: hello Ana\"";
               };
             };
             apps = {
