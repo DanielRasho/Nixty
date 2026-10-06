@@ -7,10 +7,12 @@ import { compile } from "nixty-lib/compiler"
 import { main } from "../../src/cli.js"
 import { currentSystem, nixArgs } from "../../src/commands/nix.js"
 import { System } from "../../src/compiler/constants.js"
+import template from "../../src/template.js"
 import compile01 from "../cases/compile01.js"
 
 const COMPILE01 = join(import.meta.dirname, "..", "cases", "compile01.ts")
 const REPO = join(import.meta.dirname, "..", "..")
+const TEMPLATE = join(REPO, "src", "template.ts")
 const FEATURES = ["--extra-experimental-features", "nix-command flakes"]
 
 function tempDir(): string {
@@ -19,6 +21,31 @@ function tempDir(): string {
 
 afterEach(() => {
     vi.restoreAllMocks()
+})
+
+describe("nixty init", () => {
+    it("writes the template to nixty.ts in the current folder", async () => {
+        const dir = tempDir()
+        vi.spyOn(process, "cwd").mockReturnValue(dir)
+        vi.spyOn(console, "error").mockImplementation(() => {})
+        expect(await main(["init"])).toBe(0)
+        expect(readFileSync(join(dir, "nixty.ts"), "utf8")).toBe(readFileSync(TEMPLATE, "utf8"))
+    })
+
+    it("never overwrites a nixty.ts", async () => {
+        const dir = tempDir()
+        writeFileSync(join(dir, "nixty.ts"), "mine")
+        vi.spyOn(process, "cwd").mockReturnValue(dir)
+        const error = vi.spyOn(console, "error").mockImplementation(() => {})
+        expect(await main(["init"])).toBe(1)
+        expect(error).toHaveBeenCalledWith(expect.stringMatching(/nixty\.ts already exists/))
+        expect(readFileSync(join(dir, "nixty.ts"), "utf8")).toBe("mine")
+    })
+
+    it("writes a template that compiles", () => {
+        const flake = compile(template)
+        for (const output of ["packages", "devShells", "apps"]) expect(flake).toContain(`${output} = builtins.mapAttrs`)
+    })
 })
 
 describe("nixty generate", () => {

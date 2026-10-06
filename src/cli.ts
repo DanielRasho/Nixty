@@ -7,6 +7,7 @@ import { pathToFileURL } from "node:url"
 import { Command, CommanderError } from "commander"
 import { generateCommand, type GenerateCommandOptions } from "./commands/generate.js"
 import { handOver, localCli } from "./commands/handover.js"
+import { initCommand } from "./commands/init.js"
 import { nixCommand, type NixCommand } from "./commands/nix.js"
 import { NixtyError } from "./compiler/errors.js"
 
@@ -15,6 +16,7 @@ const { version } = JSON.parse(readFileSync(new URL("../package.json", import.me
 
 const EXAMPLES = `
 Examples:
+  nixty init                   write a nixty.ts to start from
   nixty generate               compile nixty.ts into flake.nix
   nixty develop dev            enter the dev shell "dev"
   nixty build WeatherCLI -L    build a package (nix's options go after the name)
@@ -58,6 +60,13 @@ function buildProgram(exit: (code: number) => void): Command {
         .enablePositionalOptions()
         .showHelpAfterError("(run `nixty --help` for usage)")
         .addHelpText("after", EXAMPLES)
+
+    program
+        .command("init")
+        .description("write a nixty.ts to start from in this folder")
+        .action(() => {
+            exit(initCommand(process.cwd()))
+        })
 
     program
         .command("generate")
