@@ -1,37 +1,35 @@
 {
-
   description = "Generate Nix Flakes using Typescript";
 
   inputs = {
-    default-pkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
   };
 
-  outputs = { self, default-pkgs }: let
+  outputs =
+    { self, nixpkgs }:
+    let
+      # nixpkgs-unstable no longer supports x86_64-darwin (Intel Macs).
+      supportedSystems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
 
-      # SUPPORTED SYSTEMS
-      supportedSystems = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
-      
-      forAllSystems = default-pkgs.lib.genAttrs supportedSystems;
+      forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: f nixpkgs.legacyPackages.${system});
+    in
+    {
+      # `nix run github:DanielRasho/Nixty -- generate`, or `nix profile add github:DanielRasho/Nixty`.
+      packages = forAllSystems (pkgs: rec {
+        nixty = pkgs.callPackage ./nix/package.nix { };
+        default = nixty;
+      });
 
-      nixpkgsFor = system : pkgs : import pkgs {
-        inherit system;
-        config.allowUnfree = true;
+      # For NixOS and home-manager configurations: adds `pkgs.nixty`.
+      overlays.default = final: prev: {
+        nixty = final.callPackage ./nix/package.nix { };
       };
-    
-  in
-  {
-    devShells = forAllSystems ( system: 
-      let 
-        defaultPkgs = nixpkgsFor system default-pkgs ;
-      in 
-      {
-        default = defaultPkgs.mkShell {
-          packages = with defaultPkgs; [
-            nodejs 
-            pnpm 
-          ];
+
+      # For working on nixty itself.
+      devShells = forAllSystems (pkgs: {
+        default = pkgs.mkShell {
+          packages = [ pkgs.nodejs_24 pkgs.pnpm_11 ];
         };
-      }
-    ); 
-  };
+      });
+    };
 }
