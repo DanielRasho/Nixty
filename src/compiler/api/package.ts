@@ -2,6 +2,18 @@ import { System } from "../constants.js";
 import { NixtyError } from "../errors.js";
 import { Derivation, VALID_DERIVATION_NAME, type DerivationDefinition, type DerivationDeps } from "./primitives.js";
 
+export interface PackageDefinition {
+    /** Package's name */
+    name: string
+    /** The systems this package works with (e.g. Linux, macOS). */
+    systems: System[]
+    /**
+     * How to build the package on one system: its version, source, dependencies and build steps.
+     * Nixty calls it once for each system in `systems`, so you can make tweaks per system.
+     */
+    definition : (system: System) => DerivationDefinition
+}
+
 /**
  * A program that can be built for several systems (e.g. Linux and macOS).
  * `definition` says how to build it for one system; Nixty calls it once for each system in `systems`.
@@ -16,10 +28,7 @@ export class Package{
     // object identity, so asking twice must return the same object.
     #derivations = new Map<System, Derivation>();
 
-    constructor(
-        name: string,
-        systems: System[],
-        definition: (system: System) => DerivationDefinition) {
+    constructor({name, systems, definition}: PackageDefinition) {
         if (name.trim() === "")
             throw new NixtyError("A package needs a name.")
         if (!VALID_DERIVATION_NAME.test(name))

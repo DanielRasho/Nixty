@@ -9,16 +9,20 @@ const NIX_PKGS = new Nixpkgs({ tag: "nixos-26.05" })
 const SRC = new Source(Path.fetchFromTarball({ url: "https://ftp.gnu.org/gnu/hello/hello-2.12.2.tar.gz" }))
 
 // A package: GNU Hello, built with ./configure and make. Try: `nixty run hello`
-const hello = new Package("hello", SYSTEMS, () => ({
-    version: "2.12.2",
-    src: SRC,
-    deps: {},
-    phases: () => ({
-        configure: DefaultPhases.CONFIGURE,
-        build: DefaultPhases.BUILD,
-        install: DefaultPhases.INSTALL,
+const hello = new Package({
+    name: "hello",
+    systems: SYSTEMS,
+    definition: () => ({
+        version: "2.12.2",
+        src: SRC,
+        deps: {},
+        phases: () => ({
+            configure: DefaultPhases.CONFIGURE,
+            build: DefaultPhases.BUILD,
+            install: DefaultPhases.INSTALL,
+        }),
     }),
-}))
+})
 
 // A dev shell: a terminal with these tools. Try: `nixty develop dev`
 const dev = new DevShell({

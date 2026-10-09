@@ -62,6 +62,9 @@ export interface CommandDefinition {
     packages: (system: System) => Derivation[];
     /** Environment variables set inside the shell, e.g. `{ PORT: "8080" }`. */
     env?: Record<string, string | NixString>;
-    /** Shell script to run `echo "hello world"`. */
+    /**
+     * Shell script to run `echo "hello world"`. Arguments after the name (`nixty command <name> a b`)
+     * are only used where the script says: write `"$@"` to pass them on, e.g. `shellcheck "$@"`.
+     */
     command: string | NixString;
 }

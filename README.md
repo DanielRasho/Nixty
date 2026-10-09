@@ -158,17 +158,21 @@ import { Definition, Nixpkgs, Package, Path, Source, System, nix } from "nixty-l
 
 // ...
 
-const hello = new Package("hello", SYSTEMS, (system) => ({
-    version: "1.0.0",
-    src: SRC,
-    deps: {
-        atRuntime: NIX_PKGS.getPackages(["cowsay"], system),
-    },
-    // Nothing to compile: just copy the script. `out` is the folder the package is installed into.
-    phases: (out) => ({
-        install: nix`install -Dm755 hello.sh ${out}/bin/hello`,
+const hello = new Package({
+    name: "hello",
+    systems: SYSTEMS,
+    definition: (system) => ({
+        version: "1.0.0",
+        src: SRC,
+        deps: {
+            atRuntime: NIX_PKGS.getPackages(["cowsay"], system),
+        },
+        // Nothing to compile: just copy the script. `out` is the folder the package is installed into.
+        phases: (out) => ({
+            install: nix`install -Dm755 hello.sh ${out}/bin/hello`,
+        }),
     }),
-}))
+})
 
 export default new Definition({
     description: "My first Nixty project",
@@ -273,16 +277,20 @@ const NIX_PKGS = new Nixpkgs({ tag: "nixos-25.05" })
 
 const SRC = new Source(Path.fetchInternalPath("."))
 
-const hello = new Package("hello", SYSTEMS, (system) => ({
-    version: "1.0.0",
-    src: SRC,
-    deps: {
-        atRuntime: NIX_PKGS.getPackages(["cowsay"], system),
-    },
-    phases: (out) => ({
-        install: nix`install -Dm755 hello.sh ${out}/bin/hello`,
+const hello = new Package({
+    name: "hello",
+    systems: SYSTEMS,
+    definition: (system) => ({
+        version: "1.0.0",
+        src: SRC,
+        deps: {
+            atRuntime: NIX_PKGS.getPackages(["cowsay"], system),
+        },
+        phases: (out) => ({
+            install: nix`install -Dm755 hello.sh ${out}/bin/hello`,
+        }),
     }),
-}))
+})
 
 const dev = new DevShell({
     name: "dev",
@@ -478,19 +486,23 @@ A program Nix builds from a [Source](#source) and installs. `nixty build <name>`
 `./result`, and `nixty run <name>` runs it.
 
 ```ts
-const greeter = new Package("greeter", SYSTEMS, (system) => ({
-    version: "1.0.0",
-    src: new Source(Path.fetchInternalPath(".")),
-    deps: {
-        atRuntime: NIX_PKGS.getPackages(["figlet"], system),
-    },
-    phases: (out) => ({
-        build: DefaultPhases.BUILD,  // runs `make`
-        test: DefaultPhases.TEST,    // runs `make check`
-        install: nix`install -Dm755 greeter ${out}/bin/greeter`,
+const greeter = new Package({
+    name: "greeter",
+    systems: SYSTEMS,
+    definition: (system) => ({
+        version: "1.0.0",
+        src: new Source(Path.fetchInternalPath(".")),
+        deps: {
+            atRuntime: NIX_PKGS.getPackages(["figlet"], system),
+        },
+        phases: (out) => ({
+            build: DefaultPhases.BUILD,  // runs `make`
+            test: DefaultPhases.TEST,    // runs `make check`
+            install: nix`install -Dm755 greeter ${out}/bin/greeter`,
+        }),
+        metadata: { description: "Says hello", license: Licenses.MIT },
     }),
-    metadata: { description: "Says hello", license: Licenses.MIT },
-}))
+})
 ```
 
 To use your package somewhere else, like in a dev shell, use `greeter.getDerivation(system)`.
@@ -530,6 +542,10 @@ const lint = new Command({
 ```
 
 The script is checked with shellcheck before it runs, so mistakes like a missing quote fail early.
+
+> [!IMPORTANT]
+> Nixty commands **ignore** extra arguments by default. To make it work, write `"$@"` in `command`, as above. 
+> Eg: `nixty command lint ./hello.ts`, the `./hello.ts` is captured by `"$@"`.
 
 ### Definition
 

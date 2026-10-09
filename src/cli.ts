@@ -4,6 +4,7 @@
 // src/commands/.
 import { readFileSync, realpathSync } from "node:fs"
 import { pathToFileURL } from "node:url"
+import { styleText } from "node:util"
 import { Command, CommanderError } from "commander"
 import { generateCommand, type GenerateCommandOptions } from "./commands/generate.js"
 import { handOver, localCli } from "./commands/handover.js"
@@ -14,15 +15,28 @@ import { NixtyError } from "./compiler/errors.js"
 // ../package.json from both src/cli.ts and dist/cli.js.
 const { version } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { version: string }
 
-const EXAMPLES = `
-Examples:
-  nixty init                   write a nixty.ts to start from
-  nixty generate               compile nixty.ts into flake.nix
-  nixty develop dev            enter the dev shell "dev"
-  nixty build WeatherCLI -L    build a package (nix's options go after the name)
-  nixty run WeatherCLI --help  run a package (what follows the name goes to it)
-  nixty command test           run a command
-  nixty update                 move the inputs to their newest versions (flake.lock)`
+const EXAMPLES: [string, string][] = [
+    ["nixty init", "write a nixty.ts to start from"],
+    ["nixty generate", "compile nixty.ts into flake.nix"],
+    ["nixty develop dev", 'enter the dev shell "dev"'],
+    ["nixty build WeatherCLI -L", "build a package (nix's options go after the name)"],
+    ["nixty run WeatherCLI --help", "run a package (what follows the name goes to it)"],
+    ["nixty command test", "run a command"],
+    ["nixty update", "move the inputs to their newest versions (flake.lock)"],
+]
+
+/** The examples at the end of the root help, colored like Commander colors the rest of it. */
+function examplesHelp(): string {
+    const width = Math.max(...EXAMPLES.map(([example]) => example.length))
+    const lines = EXAMPLES.map(([example, description]) => {
+        // `nixty <command>` like commands, then options and arguments.
+        const words = example.split(" ").map((word, i) =>
+            styleText(i < 2 ? "cyan" : word.startsWith("-") ? "green" : "yellow", word),
+        )
+        return `  ${words.join(" ")}${" ".repeat(width - example.length + 3)}${description}`
+    })
+    return `\n${styleText("bold", "Examples:")}\n${lines.join("\n")}`
+}
 
 /** Runs the CLI with `argv` (without `node` and the script) and returns the exit code. */
 export async function main(argv: string[] = process.argv.slice(2)): Promise<number> {
@@ -59,7 +73,16 @@ function buildProgram(exit: (code: number) => void): Command {
         .exitOverride()
         .enablePositionalOptions()
         .showHelpAfterError("(run `nixty --help` for usage)")
-        .addHelpText("after", EXAMPLES)
+        .addHelpText("after", examplesHelp)
+        // Commands, options and arguments in different colors. Commander drops them when the output
+        // isn't a terminal, and styleText when NO_COLOR is set.
+        .configureHelp({
+            styleTitle: (text) => styleText("bold", text),
+            styleCommandText: (text) => styleText("cyan", text),
+            styleSubcommandText: (text) => styleText("cyan", text),
+            styleOptionText: (text) => styleText("green", text),
+            styleArgumentText: (text) => styleText("yellow", text),
+        })
 
     program
         .command("init")
@@ -80,7 +103,7 @@ function buildProgram(exit: (code: number) => void): Command {
 
     // Commands handing off to nix. Only the name is nixty's: whatever follows it goes to nix (or, for
     // run and command, to the program), unchanged.
-    const nix = (name: NixCommand, args: string, description: string): void => {
+    const nix = (name: NixCommand, args: string, description: string): Command =>
         program
             .command(name)
             .description(description)
@@ -94,10 +117,12 @@ function buildProgram(exit: (code: number) => void): Command {
                 const options = command.opts() as { generate: boolean }
                 exit(await nixCommand(name, command.args, options.generate))
             })
-    }
     nix("build", "<package> [nixArgs...]", "build a package (nix build)")
     nix("run", "<package> [args...]", "run a package's program (nix run)")
-    nix("command", "<command> [args...]", "run a command (nix run)")
+    nix("command", "<command> [args...]", "run a command (nix run)").addHelpText(
+        "after",
+        `\n${styleText("yellow", "Note:")} the args only reach the script where it says "$@", e.g. command: \`shellcheck "$@"\`.`,
+    )
     nix("develop", "<shell> [nixArgs...]", "enter a dev shell (nix develop)")
     nix("update", "[inputs...]", "update the inputs' locked versions in flake.lock (nix flake update)")
 

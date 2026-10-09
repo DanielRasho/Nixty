@@ -8,12 +8,16 @@ const NIX_PKGS = new Nixpkgs({ tag: "nixos-25.05" })
 const SRC = new Source(Path.fetchInternalPath("."))
 
 // A package: hello.sh, installed as `hello`. Try: `nixty run hello Ana`
-const hello = new Package("hello", SYSTEMS, (system) => ({
-    version: "1.0.0",
-    src: SRC,
-    deps: { atRuntime: NIX_PKGS.getPackages(["figlet", "cowsay"], system) },
-    phases: (out) => ({ install: nix`install -Dm755 hello.sh ${out}/bin/hello` }),
-}))
+const hello = new Package({
+    name: "hello",
+    systems: SYSTEMS,
+    definition: (system) => ({
+        version: "1.0.0",
+        src: SRC,
+        deps: { atRuntime: NIX_PKGS.getPackages(["figlet", "cowsay"], system) },
+        phases: (out) => ({ install: nix`install -Dm755 hello.sh ${out}/bin/hello` }),
+    }),
+})
 
 // A dev shell: a terminal with these tools. Try: `nixty develop dev`
 const dev = new DevShell({

@@ -23,13 +23,17 @@ describe("weathercli", () => {
 describe("compile", () => {
     it("rejects a package from another system", () => {
         const NIX_PKGS = new Nixpkgs({ tag: "nixos-25.05" })
-        const p = new Package("p", [System.x86_64Linux, System.aarch64Linux], () => ({
-            version: "1.0",
-            src: new Source(Path.fetchInternalPath(".")),
-            // A fixed system instead of the one the recipe receives.
-            deps: { atBuild: NIX_PKGS.getPackages(["go"], System.x86_64Linux) },
-            phases: () => ({}),
-        }))
+        const p = new Package({
+            name: "p",
+            systems: [System.x86_64Linux, System.aarch64Linux],
+            definition: () => ({
+                version: "1.0",
+                src: new Source(Path.fetchInternalPath(".")),
+                // A fixed system instead of the one the recipe receives.
+                deps: { atBuild: NIX_PKGS.getPackages(["go"], System.x86_64Linux) },
+                phases: () => ({}),
+            }),
+        })
         const definition = new Definition({ description: "", nixpkgs: NIX_PKGS, packages: [p] })
         expect(() => compile(definition)).toThrow(/packages\.p \(aarch64-linux\) uses a value made for x86_64-linux/)
     })

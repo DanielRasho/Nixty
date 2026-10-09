@@ -25,13 +25,17 @@ function context(): ExpandContext {
 }
 
 function pkg(name: string, systems: System[], definition: (system: System) => Partial<DerivationDefinition>): Package {
-    return new Package(name, systems, (system) => ({
-        version: "1.0",
-        src,
-        deps: {},
-        phases: () => ({}),
-        ...definition(system),
-    }))
+    return new Package({
+        name,
+        systems,
+        definition: (system) => ({
+            version: "1.0",
+            src,
+            deps: {},
+            phases: () => ({}),
+            ...definition(system),
+        }),
+    })
 }
 
 describe("values", () => {
@@ -158,8 +162,12 @@ describe("outputs", () => {
     })
 
     it("say which output and system a recipe failed in", () => {
-        const p = new Package("p", [ARM], () => {
-            throw new Error("boom")
+        const p = new Package({
+            name: "p",
+            systems: [ARM],
+            definition: () => {
+                throw new Error("boom")
+            },
         })
         const definition = new Definition({ description: "", nixpkgs: NIX_PKGS, packages: [p] })
         expect(() => expand(definition)).toThrow(NixtyError)

@@ -15,30 +15,34 @@ const defaultConfig = (system: System) =>
         JSON.stringify({ city: "Mexico City", units: "metric" }),
     )
 
-const WeatherCLI = new Package("WeatherCLI", SYSTEMS, (system) => {
-    const [nodejs, go, vitest] = NIX_PKGS.getPackages(["nodejs_22", "go", "vitest"], system)
-    return {
-        version: "1.0.0",
-        src: new Source(Path.fetchInternalPath(".")),
-        deps: {
-            atBuild: [nodejs],
-            atRuntime: [nodejs],
-            atTest: [vitest],
-            linkedLibs: system === System.aarch64Linux ? [go] : [],
-            linkedAndExportedLibs: [go],
-        },
-        phases: (out) => ({
-            configure: DefaultPhases.CONFIGURE,
-            build: nix`npm run build -- --config ${defaultConfig(system)}`,
-            test: DefaultPhases.TEST,
-            install: nix`mkdir -p ${out}/bin\ncp dist/weather ${out}/bin/`,
-        }),
-        metadata: {
-            description: "Tells the weather of a city",
-            license: Licenses.MIT,
-            mainProgram: "weather",
-        },
-    }
+const WeatherCLI = new Package({
+    name: "WeatherCLI",
+    systems: SYSTEMS,
+    definition: (system) => {
+        const [nodejs, go, vitest] = NIX_PKGS.getPackages(["nodejs_22", "go", "vitest"], system)
+        return {
+            version: "1.0.0",
+            src: new Source(Path.fetchInternalPath(".")),
+            deps: {
+                atBuild: [nodejs],
+                atRuntime: [nodejs],
+                atTest: [vitest],
+                linkedLibs: system === System.aarch64Linux ? [go] : [],
+                linkedAndExportedLibs: [go],
+            },
+            phases: (out) => ({
+                configure: DefaultPhases.CONFIGURE,
+                build: nix`npm run build -- --config ${defaultConfig(system)}`,
+                test: DefaultPhases.TEST,
+                install: nix`mkdir -p ${out}/bin\ncp dist/weather ${out}/bin/`,
+            }),
+            metadata: {
+                description: "Tells the weather of a city",
+                license: Licenses.MIT,
+                mainProgram: "weather",
+            },
+        }
+    },
 })
 
 const QA = new DevShell({

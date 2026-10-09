@@ -15,25 +15,29 @@ const defaultConfig = (system: System) =>
         JSON.stringify({ city: "Mexico City", units: "metric", format: "compact" }),
     )
 
-const weathercli = new Package("weathercli", SYSTEMS, (system) => ({
-    version: "1.0.0",
-    src: new Source(Path.fetchInternalPath(".")),
-    deps: {
-        // Programs weathercli calls. They're put on its PATH so users don't need to install them.
-        atRuntime: NIX_PKGS.getPackages(["curl", "jq"], system),
-    },
-    // No configure or build phase: there is nothing to compile.
-    phases: (out) => ({
-        install: nix`install -Dm755 weathercli.sh ${out}/bin/weathercli\ninstall -Dm644 ${defaultConfig(system)} ${out}/${CONFIG}`,
-        // The config the program starts with. Users can still override it.
-        postFixup: nix`wrapProgram ${out}/bin/weathercli --set-default WEATHERCLI_CONFIG ${out}/${CONFIG}`,
+const weathercli = new Package({
+    name: "weathercli",
+    systems: SYSTEMS,
+    definition: (system) => ({
+        version: "1.0.0",
+        src: new Source(Path.fetchInternalPath(".")),
+        deps: {
+            // Programs weathercli calls. They're put on its PATH so users don't need to install them.
+            atRuntime: NIX_PKGS.getPackages(["curl", "jq"], system),
+        },
+        // No configure or build phase: there is nothing to compile.
+        phases: (out) => ({
+            install: nix`install -Dm755 weathercli.sh ${out}/bin/weathercli\ninstall -Dm644 ${defaultConfig(system)} ${out}/${CONFIG}`,
+            // The config the program starts with. Users can still override it.
+            postFixup: nix`wrapProgram ${out}/bin/weathercli --set-default WEATHERCLI_CONFIG ${out}/${CONFIG}`,
+        }),
+        metadata: {
+            description: "Reporte del clima en la terminal, configurable vía un archivo JSON",
+            license: Licenses.MIT,
+            mainProgram: "weathercli",
+        },
     }),
-    metadata: {
-        description: "Reporte del clima en la terminal, configurable vía un archivo JSON",
-        license: Licenses.MIT,
-        mainProgram: "weathercli",
-    },
-}))
+})
 
 const dev = new DevShell({
     name: "dev",
